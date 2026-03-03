@@ -1,11 +1,11 @@
+"use client";
+
 // Professional error handling helper
 function getErrorMessage(error: unknown): string {
   if (error instanceof Error) return error.message;
   if (typeof error === "string") return error;
   return "Noma'lum xatolik yuz berdi";
 }
-
-"use client";
 
 import React, { useEffect, useState } from "react";
 import { format } from "date-fns";
