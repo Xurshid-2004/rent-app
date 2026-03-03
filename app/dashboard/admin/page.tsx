@@ -1,3 +1,10 @@
+// Professional error handling helper
+function getErrorMessage(error: unknown): string {
+  if (error instanceof Error) return error.message;
+  if (typeof error === "string") return error;
+  return "Noma'lum xatolik yuz berdi";
+}
+
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
@@ -16,7 +23,9 @@ interface Order {
   customerPhone: string;
   startDate: string;
   endDate: string;
-  createdAt?: any;
+  createdAt?: {
+    toMillis?: () => number;
+  };
 }
 
 interface AdminCar {
@@ -242,8 +251,8 @@ export default function AdminPage() {
       setCategory("all");
       loadAdminCars();
       if (fileInputRef.current) fileInputRef.current.value = "";
-    } catch (err: any) {
-      showToast(err?.message || t.admin.retryError, "error");
+    } catch (error: unknown) {
+      showToast(getErrorMessage(error) || t.admin.retryError, "error");
     } finally {
       setLoading(false);
     }
@@ -258,8 +267,8 @@ export default function AdminPage() {
           await deleteDoc(doc(db, "project2", "admin", "cars", id));
           showToast(t.admin.deleted, "success");
           loadAdminCars();
-        } catch (e: any) {
-          showToast(e?.message || t.common.error, "error");
+        } catch (error: unknown) {
+          showToast(getErrorMessage(error) || t.common.error, "error");
         }
       }
     );
@@ -290,8 +299,8 @@ export default function AdminPage() {
             }
           };
           loadOrders();
-        } catch (e: any) {
-          showToast(e?.message || t.admin.returnError, "error");
+        } catch (error: unknown) {
+          showToast(getErrorMessage(error) || t.admin.returnError, "error");
         }
       }
     );
@@ -325,8 +334,8 @@ export default function AdminPage() {
             showToast(t.admin.returnSuccess, "success");
             loadAdminCars(); // Admin cars ro'yxatini yangilash
           }
-        } catch (e: any) {
-          showToast(e?.message || t.admin.returnError, "error");
+        } catch (error: unknown) {
+          showToast(getErrorMessage(error) || t.admin.returnError, "error");
         }
       }
     );
@@ -638,8 +647,8 @@ export default function AdminPage() {
                       showToast(t.admin.saved, "success");
                       setEditId(null);
                       loadAdminCars();
-                    } catch (e: any) {
-                      showToast(e?.message || t.common.error, "error");
+                    } catch (error: unknown) {
+                      showToast(getErrorMessage(error) || t.common.error, "error");
                     }
                   }}
                   className="flex-1 h-11 rounded-xl bg-green-500 hover:bg-green-600 text-white font-medium"

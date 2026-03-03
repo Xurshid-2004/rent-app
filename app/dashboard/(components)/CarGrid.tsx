@@ -1,3 +1,10 @@
+// Professional error handling helper
+function getErrorMessage(error: unknown): string {
+  if (error instanceof Error) return error.message;
+  if (typeof error === "string") return error;
+  return "Noma'lum xatolik yuz berdi";
+}
+
 "use client";
 
 import React, { useEffect, useState } from "react";
@@ -53,7 +60,7 @@ function OrderModal({
   const [customerName, setCustomerName] = useState("");
   const [customerPhone, setCustomerPhone] = useState("");
   const [loading, setLoading] = useState(false);
-  const [userInfo, setUserInfo] = useState<any>(null);
+  const [userInfo, setUserInfo] = useState<{ fullName: string } | null>(null);
 
   useEffect(() => {
     const uid = auth.currentUser?.uid;
@@ -63,7 +70,7 @@ function OrderModal({
     (async () => {
       try {
         const snap = await getDoc(doc(db, "project2", "users", uid));
-        const fullName = (snap.exists() ? (snap.data() as any)?.fullName : "") || "";
+        const fullName = (snap.exists() ? (snap.data() as { fullName?: string })?.fullName : "") || "";
         if (!cancelled && fullName && !customerName.trim()) setCustomerName(String(fullName));
       } catch {
         // ignore
@@ -112,7 +119,7 @@ function OrderModal({
       if (car.userId) {
         const ownerDoc = await getDoc(doc(db, "users", car.userId));
         if (ownerDoc.exists()) {
-          carOwnerEmail = (ownerDoc.data() as any)?.email || "";
+          carOwnerEmail = (ownerDoc.data() as { email?: string })?.email || "";
         }
       }
 
@@ -140,8 +147,8 @@ function OrderModal({
 
       onSuccess(t.order.success);
       onClose();
-    } catch (err: any) {
-      onError(err?.message || t.order.error);
+    } catch (error: unknown) {
+      onError(getErrorMessage(error));
     } finally {
       setLoading(false);
     }
@@ -292,8 +299,8 @@ export default function CarGrid({ category }: { category: CarCategory }) {
       
       list.sort((a, b) => (b.year || "").localeCompare(a.year || ""));
       setCars(list);
-    } catch (err: any) {
-      setError(err?.message || t.common.error);
+    } catch (error: unknown) {
+      setError(getErrorMessage(error));
       setCars([]);
     } finally {
       setLoading(false);

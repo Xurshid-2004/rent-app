@@ -21,6 +21,19 @@ import {
   GoogleAuthProvider,
 } from "firebase/auth";
 
+// Professional error handling helper
+function getErrorMessage(error: unknown): string {
+  if (error instanceof Error) return error.message;
+  if (typeof error === "string") return error;
+  return "Noma'lum xatolik yuz berdi";
+}
+
+type AuthMode = "signin" | "signup";
+
+type ThemeName = "indigo" | "emerald" | "rose" | "slate" | "blue";
+
+type ThemeMap = Record<ThemeName, string>;
+
 function LayoutContent({ children }: { children: ReactNode }) {
   const { setRange } = useOrderDate();
   const { language, setLanguage, t } = useLanguage();
@@ -109,8 +122,8 @@ function LayoutContent({ children }: { children: ReactNode }) {
       setSignUpAge("");
       setSignUpEmail("");
       setSignUpPassword("");
-    } catch (err: any) {
-      setAuthError(err?.message || "Ro'yxatdan o'tishda xato");
+    } catch (error: unknown) {
+      setAuthError(getErrorMessage(error));
     } finally {
       setAuthLoading(false);
     }
@@ -125,8 +138,10 @@ function LayoutContent({ children }: { children: ReactNode }) {
       setCount(false);
       setSignInEmail("");
       setSignInPassword("");
-    } catch (err: any) {
-      setAuthError(err?.message || "Kirishda xato");
+        } catch (error: unknown) {
+      setAuthError(getErrorMessage(error));
+
+
     } finally {
       setAuthLoading(false);
     }
@@ -153,8 +168,8 @@ function LayoutContent({ children }: { children: ReactNode }) {
       }
       if (isSignUp) setSignUp(false);
       else setCount(false);
-    } catch (err: any) {
-      setAuthError(err?.message || "Google orqali kirishda xato");
+    } catch (error: unknown) {
+      setAuthError(getErrorMessage(error));
     } finally {
       setAuthLoading(false);
     }
@@ -534,7 +549,7 @@ function LayoutContent({ children }: { children: ReactNode }) {
                   ✕
                 </button>
               </div>
-              <Drawer.Description className="text-slate-400 text-xs sm:text-sm">{language === "uz" ? "Profil bo'limi" : language === "ru" ? "Раздел профиля" : "Profile section"}</Drawer.Description>
+              <Drawer.Description className="text-slate-400 text-xs sm:text-sm">{language === "uz" ? "Profil bo&apos;limi" : language === "ru" ? "Раздел профиля" : "Profile section"}</Drawer.Description>
             </div>
             <div className="flex flex-col gap-2 sm:gap-3 md:gap-4 overflow-y-auto flex-1">
               <MenuButton onClick={() => { setOpen(false); setCount(true); }} icon="/k2.png" label={t.auth.login} color="indigo" />
@@ -580,7 +595,7 @@ const MenuButton = ({
   onClick?: () => void;
   className?: string;
 }) => {
-  const themes: any = {
+const themes: Record<string, string> = {
     indigo: "hover:border-indigo-200 text-indigo-600 bg-indigo hover:bg-indigo-500",
     emerald: "hover:border-emerald-200 text-emerald-600 bg-emerald-50 hover:bg-emerald-500",
     rose: "hover:border-rose-200 text-rose-600 bg-rose-50 hover:bg-rose-500",
