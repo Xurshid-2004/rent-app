@@ -1,6 +1,6 @@
 import { initializeApp, getApp, getApps } from "firebase/app";
 import { browserLocalPersistence, getAuth, setPersistence } from "firebase/auth";
-import { getFirestore } from "firebase/firestore";
+import { getFirestore, connectFirestoreEmulator } from "firebase/firestore";
 
 const firebaseConfig = {
   apiKey: "AIzaSyDtHbMJHDf7BO8a8bty9gV9WYBZ0vCRx3k",
@@ -16,8 +16,22 @@ export const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 export const db = getFirestore(app);
 
+// Enable offline persistence for better UX
+import { enableIndexedDbPersistence } from "firebase/firestore";
+
 if (typeof window !== "undefined") {
   setPersistence(auth, browserLocalPersistence).catch(() => {
     // ignore
+  });
+
+  // Enable offline persistence
+  enableIndexedDbPersistence(db).catch((err) => {
+    if (err.code === 'failed-precondition') {
+      // Multiple tabs open, persistence can only be enabled in one tab at a time
+      console.warn('Firestore persistence: Multiple tabs detected');
+    } else if (err.code === 'unimplemented') {
+      // The current browser does not support persistence
+      console.warn('Firestore persistence: Browser not supported');
+    }
   });
 }

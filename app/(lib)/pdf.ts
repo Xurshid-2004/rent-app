@@ -9,13 +9,17 @@ export type PdfOrder = {
   customerPhone?: string;
   startDate?: string;
   endDate?: string;
-  createdAt?: any;
+  createdAt?: {
+    toDate?: () => Date;
+  } | Date | string | number;
 };
 
-function toDate(value: any): Date | null {
+function toDate(value: {
+  toDate?: () => Date;
+} | Date | string | number | null | undefined): Date | null {
   if (!value) return null;
   if (value instanceof Date) return value;
-  if (typeof value?.toDate === "function") return value.toDate();
+  if (typeof value === "object" && typeof value?.toDate === "function") return value.toDate();
   if (typeof value === "number") return new Date(value);
   if (typeof value === "string") {
     const d = new Date(value);

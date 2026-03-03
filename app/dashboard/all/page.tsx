@@ -7,7 +7,7 @@ import { motion } from "framer-motion";
 import {  Variants } from "framer-motion"
 // Animatsiya konfiguratsiyalari
 
-  const fadeIn: Variants = { // : Variants qo'shildi
+  const fadeIn: Variants = { // : Variants qo&apos;shildi
     hidden: { opacity: 0, y: 30 },
     visible: { 
       opacity: 1, 

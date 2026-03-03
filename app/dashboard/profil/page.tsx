@@ -271,15 +271,15 @@ const ProfilePage = () => {
   const handleDeleteOrder = async (orderId: string) => {
     await toastConfirm(
       `delete_order_${orderId}`,
-      "Buyurtmani o'chirishni tasdiqlaysizmi?",
+      "Buyurtmani o&apos;chirishni tasdiqlaysizmi?",
       async () => {
         try {
           await deleteDoc(doc(db, "project2", "admin", "orders", orderId));
           setUserOrders((prev) => prev.filter((order) => order.id !== orderId));
-          showToast("Buyurtma o'chirildi", "success");
+          showToast("Buyurtma o&apos;chirildi", "success");
         } catch (error) {
           console.error("Error deleting order:", error);
-          showToast("Buyurtmani o'chirishda xatolik", "error");
+          showToast("Buyurtmani o&apos;chirishda xatolik", "error");
         }
       }
     );

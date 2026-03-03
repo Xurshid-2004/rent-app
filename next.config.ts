@@ -10,7 +10,6 @@ const nextConfig: NextConfig = {
     }
     return config;
   },
-  turbopack: {},
   typescript: {
     ignoreBuildErrors: false,
   },

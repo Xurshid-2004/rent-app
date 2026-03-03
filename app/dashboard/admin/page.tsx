@@ -222,7 +222,7 @@ export default function AdminPage() {
         await updateDoc(doc(db, "project2", "admin", "cars", existingDoc.id), {
           quantity: increment(Number(quantity)),
         });
-        showToast(`${Number(quantity)} ta ${name.trim()} qo'shildi`, "success");
+        showToast(`${Number(quantity)} ta ${name.trim()} qo&apos;shildi`, "success");
         loadAdminCars();
       } else {
         await addDoc(carsRef, {
@@ -235,7 +235,7 @@ export default function AdminPage() {
           quantity: Number(quantity),
           price: price.trim() ? (isNaN(Number(price)) ? price.trim() : Number(price)) : undefined,
         });
-        showToast(`${Number(quantity)} ta ${name.trim()} qo'shildi`, "success");
+        showToast(`${Number(quantity)} ta ${name.trim()} qo&apos;shildi`, "success");
       }
       
       // Formani tozalash
@@ -324,11 +324,11 @@ export default function AdminPage() {
             await addDoc(carsRef, {
               ...carData,
               quantity: 1, // Sotuvda 1 ta bo'ladi
-              addedToSales: true, // Sotuvga qo'shilganligini belgilash
-              salesDate: new Date() // Qo'shilgan vaqti
+              addedToSales: true, // Sotuvga qo&apos;shilganligini belgilash
+              salesDate: new Date() // Qo&apos;shilgan vaqti
             });
             
-            // Admin panelidan o'chirish
+            // Admin panelidan o&apos;chirish
             await deleteDoc(carRef);
             
             showToast(t.admin.returnSuccess, "success");

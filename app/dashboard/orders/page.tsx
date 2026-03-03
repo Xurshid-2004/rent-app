@@ -132,7 +132,7 @@ const OrdersPage = () => {
   };
 
   const handleDeleteOrder = async (orderId: string) => {
-    if (!confirm("Bu buyurtmani o'chirmoqchimisiz?")) {
+    if (!confirm("Bu buyurtmani o&apos;chirmoqchimisiz?")) {
       return;
     }
 
@@ -141,7 +141,7 @@ const OrdersPage = () => {
       
       setUserOrders(prev => prev.filter(order => order.id !== orderId));
       
-      showToast("Buyurtma o'chirildi", "success");
+      showToast("Buyurtma o&apos;chirildi", "success");
     } catch (error) {
       console.error("Error deleting order:", error);
       showToast("Xatolik yuz berdi", "error");
@@ -174,7 +174,7 @@ const OrdersPage = () => {
                   <Calendar size={24} className="md:w-8 md:h-8 shrink-0" />
                   Buyurtmalarim
                 </h1>
-                <p className="text-[#FFD700]/70 mt-1 text-sm md:text-base">Faqat o'zingiz qo'shgan mashinalardagi buyurtmalar</p>
+                <p className="text-[#FFD700]/70 mt-1 text-sm md:text-base">Faqat o&apos;zingiz qo&apos;shgan mashinalardagi buyurtmalar</p>
               </div>
             </div>
           </div>
@@ -186,7 +186,7 @@ const OrdersPage = () => {
             <div className="text-center py-16">
               <Calendar size={60} className="text-[#FFD700]/50 mx-auto mb-4" />
               <p className="text-[#FFD700]/70 text-xl mb-2">Hozircha buyurtmalar yo'q</p>
-              <p className="text-[#FFD700]/50">Siz qo'shgan mashinalarga hech kim buyurtma bermagan</p>
+              <p className="text-[#FFD700]/50">Siz qo&apos;shgan mashinalarga hech kim buyurtma bermagan</p>
             </div>
           ) : (
             <div className="space-y-6">
@@ -248,7 +248,7 @@ const OrdersPage = () => {
                         className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-medium rounded-xl transition-all duration-300 flex items-center gap-2 text-sm"
                       >
                         <Trash2 size={16} />
-                        O'chirish
+                        O&apos;chirish
                       </button>
                     </div>
                   </div>

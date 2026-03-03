@@ -37,7 +37,8 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
       .matches;
 
     const initial: Theme = saved || (prefersDark ? "dark" : "light");
-    setTheme(initial);
+    // Avoid synchronous setState in effect
+    setTimeout(() => setTheme(initial), 0);
     document.documentElement.classList.toggle("dark", initial === "dark");
   }, []);
 

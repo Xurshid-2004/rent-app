@@ -98,7 +98,7 @@ const Navbar = () => {
         ))}
       </div>
       
-      {/* O'z mashinasini qo'shish tugmasi */}
+      {/* O&apos;z mashinasini qo&apos;shish tugmasi */}
       <button
         onClick={handleAddCar}
         className="flex items-center gap-1.5 sm:gap-2 px-4 sm:px-5 md:px-6 py-2.5 sm:py-3 bg-blue-600 hover:bg-blue-700 text-white text-sm sm:text-base font-medium rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl active:scale-95"

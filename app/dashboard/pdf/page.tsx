@@ -95,10 +95,10 @@ export default function PdfPage() {
 
           <div className="bg-black/85 border border-white/15 rounded-2xl p-8 shadow-2xl">
             <h1 className="text-white text-2xl md:text-3xl font-extrabold leading-snug">
-              Buyurtmangizni PDF ko'rinishida yuklab oling
+              Buyurtmangizni PDF ko&apos;rinishida yuklab oling
             </h1>
             <p className="text-white/70 mt-3 text-sm">
-              PDF ichida ism-familya, mashina, sanalar va buyurtma qilingan vaqt ko'rsatiladi.
+              PDF ichida ism-familya, mashina, sanalar va buyurtma qilingan vaqt ko&apos;rsatiladi.
             </p>
 
             <div className="mt-8 space-y-4">

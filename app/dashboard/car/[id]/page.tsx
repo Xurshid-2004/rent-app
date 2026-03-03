@@ -37,14 +37,14 @@ export default function CarDetailPage() {
       if (!params.id) return;
 
       try {
-        // Avval Firebase'dan qidiramiz
+        // Avval Firebase&apos;dan qidiramiz
         const docRef = doc(db, "project2", "admin", "cars", params.id as string);
         const docSnap = await getDoc(docRef);
 
         if (docSnap.exists()) {
           setCar({ id: docSnap.id, ...docSnap.data() } as Car);
         } else {
-          // Agar Firebase'da bo'lmasa, localStorage dan qidiramiz
+          // Agar Firebase&apos;da bo&apos;lmasa, localStorage dan qidiramiz
           const userCars = JSON.parse(localStorage.getItem("userCars") || "[]");
           const foundCar = userCars.find((c: Car) => c.id === params.id);
           
@@ -55,7 +55,7 @@ export default function CarDetailPage() {
           }
         }
       } catch (err) {
-        // Firebase xatolik bo'lsa, localStorage dan qidiramiz
+        // Firebase xatolik bo&apos;lsa, localStorage dan qidiramiz
         try {
           const userCars = JSON.parse(localStorage.getItem("userCars") || "[]");
           const foundCar = userCars.find((c: Car) => c.id === params.id);
@@ -66,7 +66,7 @@ export default function CarDetailPage() {
             setError("Mashina topilmadi");
           }
         } catch {
-          setError("Ma'lumotlarni yuklashda xatolik");
+          setError("Ma&apos;lumotlarni yuklashda xatolik");
         }
       } finally {
         setLoading(false);
@@ -177,9 +177,9 @@ export default function CarDetailPage() {
               )}
             </div>
 
-            {/* O'ng tomon - Ma'lumotlar */}
+            {/* O&apos;ng tomon - Ma&apos;lumotlar */}
             <div className="space-y-6">
-              {/* Mashina nomi va asosiy ma'lumotlar */}
+              {/* Mashina nomi va asosiy ma&apos;lumotlar */}
               <div className="bg-white/10 backdrop-blur-lg rounded-3xl p-8 border border-white/20">
                 <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold text-[#FFD700] mb-4">{car.name}</h1>
                 
@@ -197,7 +197,7 @@ export default function CarDetailPage() {
                     <div>
                       <p className="text-[#FFD700]/60 text-sm">Narx</p>
                       <p className="text-green-400 font-bold text-xl">
-                        {typeof car.price === "number" ? car.price.toLocaleString() : car.price} so'm
+                        {typeof car.price === "number" ? car.price.toLocaleString() : car.price} so&apos;m
                       </p>
                     </div>
                   </div>
@@ -250,7 +250,7 @@ export default function CarDetailPage() {
                 )}
               </div>
 
-              {/* Agar bu foydalanuvchi mashinasi bo'lsa */}
+              {/* Agar bu foydalanuvchi mashinasi bo&apos;lsa */}
               {car.userEmail && (
                 <div className="bg-white/10 backdrop-blur-lg rounded-3xl p-6 border border-white/20">
                   <h3 className="text-[#FFD700] font-semibold mb-4 flex items-center gap-2">
