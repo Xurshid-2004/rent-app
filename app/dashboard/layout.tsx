@@ -208,7 +208,7 @@ function LayoutContent({ children }: { children: ReactNode }) {
           <div className="max-w-[1350px] mx-auto px-3 sm:px-6 h-[60px] sm:h-[70px] flex items-center justify-between bg-black/40 bg-white/10 border border-white/20 rounded-2xl shadow-lg overflow-visible">
 
             {/* Logo + Sarlavha */}
-            <div className="flex items-center gap-4 md:gap-6 lg:gap-10 text-green-500 active:scale-95 min-w-0 flex-shrink-0">
+            <div className="flex items-center gap-2 md:gap-3 lg:gap-6 text-green-500 active:scale-95 min-w-0 flex-shrink-0">
               <Link href={"/dashboard/all"}>
                 <img
                   src="/dod.png"
@@ -222,6 +222,16 @@ function LayoutContent({ children }: { children: ReactNode }) {
                 {t.landing.carRental}
               </h4>
             </div>
+
+
+
+
+
+
+
+
+
+
 
             {/* O'ng tomondagi tugmalar */}
             <div className="flex items-center gap-1 sm:gap-2 md:gap-4 lg:gap-6 flex-shrink-0">
@@ -305,7 +315,7 @@ function LayoutContent({ children }: { children: ReactNode }) {
         {/* Hero Matn */}
        <div className="flex-1 flex flex-col items-center justify-center text-center z-10 px-4">
   {/* Sarlavha */}
-  <h1 className="text-green-500 text-2xl sm:text-3xl md:text-5xl font-bold tracking-tight mb-56 sm:mb-0 drop-shadow-2xl">
+  <h1 className="text-green-500 text-2xl sm:text-3xl md:text-5xl font-bold tracking-tight mb-48 sm:mb-0 drop-shadow-2xl">
     {t.landing.discoverWorld}
   </h1>
 
