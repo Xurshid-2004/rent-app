@@ -19,6 +19,7 @@ type Category = "all" | "comfort" | "classic" | "sport" | "family";
 interface Order {
   id: string;
   carName: string;
+  carId?: string;
   customerName: string;
   customerPhone: string;
   startDate: string;
@@ -42,6 +43,8 @@ interface AdminCar {
   description?: string;
   images?: string[];
   ownerId?: string;
+  returnedToSales?: boolean;
+  returnedDate?: any;
 }
 
 export default function AdminPage() {
@@ -70,6 +73,36 @@ export default function AdminPage() {
   const [confirmKey, setConfirmKey] = useState<string | null>(null);
   const [confirmUntil, setConfirmUntil] = useState<number>(0);
 
+  // Check if car is currently rented
+  const isCarRented = (carId: string) => {
+    const car = adminCars.find(c => c.id === carId);
+    if (car?.returnedToSales) return false; // Agar sotuvga qaytarilgan bo'lsa, ijarada emas
+    return orders.some(order => 
+      order.carId === carId || (order.carName && car && car.name === order.carName)
+    );
+  };
+
+  // Load orders function
+  const loadOrders = async () => {
+    try {
+      const ordersRef = collection(db, "project2", "admin", "orders");
+      const snap = await getDocs(ordersRef);
+      const ordersList = snap.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      })) as Order[];
+      ordersList.sort((a, b) => {
+        const t1 = a.createdAt?.toMillis?.() ?? 0;
+        const t2 = b.createdAt?.toMillis?.() ?? 0;
+        return t2 - t1;
+      });
+      setOrders(ordersList);
+    } catch (error: unknown) {
+      showToast(getErrorMessage(error), "error");
+      setOrders([]);
+    }
+  };
+
   const toastConfirm = async (key: string, message: string, action: () => Promise<void>) => {
     const now = Date.now();
     if (confirmKey === key && now < confirmUntil) {
@@ -84,21 +117,6 @@ export default function AdminPage() {
   };
 
   useEffect(() => {
-    const loadOrders = async () => {
-      try {
-        const ordersRef = collection(db, "project2", "admin", "orders");
-        const snap = await getDocs(ordersRef);
-        const list = snap.docs.map((d) => ({ id: d.id, ...d.data() } as Order));
-        list.sort((a, b) => {
-          const t1 = a.createdAt?.toMillis?.() ?? 0;
-          const t2 = b.createdAt?.toMillis?.() ?? 0;
-          return t2 - t1;
-        });
-        setOrders(list);
-      } catch {
-        setOrders([]);
-      }
-    };
     loadOrders();
     const interval = setInterval(loadOrders, 10000);
     return () => clearInterval(interval);
@@ -319,20 +337,26 @@ export default function AdminPage() {
           if (carSnap.exists()) {
             const carData = carSnap.data();
             
-            // Umumiy cars collection ga qo'shish
-            const carsRef = collection(db, "project2", "cars");
+            // Umumiy cars collection ga qo'shish (CarGrid shu yerdan qidiradi)
+            const carsRef = collection(db, "project2", "admin", "cars");
             await addDoc(carsRef, {
               ...carData,
               quantity: 1, // Sotuvda 1 ta bo'ladi
               addedToSales: true, // Sotuvga qo&apos;shilganligini belgilash
-              salesDate: new Date() // Qo&apos;shilgan vaqti
+              salesDate: new Date(), // Qo&apos;shilgan vaqti
+              originalCarId: carId, // Asl car ID ni saqlab qolish
+              returnedFromAdmin: true // Admin tomonidan qaytarilganligini belgilash
             });
             
-            // Admin panelidan o&apos;chirish
-            await deleteDoc(carRef);
+            // Admin panelidan o&apos;chirish o&apos;rniga statusini yangilash
+            await updateDoc(carRef, {
+              returnedToSales: true, // Sotuvga qaytarilganligini belgilash
+              returnedDate: new Date() // Qaytarilgan vaqti
+            });
             
             showToast(t.admin.returnSuccess, "success");
             loadAdminCars(); // Admin cars ro'yxatini yangilash
+            loadOrders(); // Buyurtmalarni ham yangilash
           }
         } catch (error: unknown) {
           showToast(getErrorMessage(error) || t.admin.returnError, "error");
@@ -505,11 +529,11 @@ export default function AdminPage() {
           {adminCars.length === 0 ? (
             <p className="text-gray-400 text-base sm:text-lg text-center">{t.admin.noCars}</p>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 lg:gap-10">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
               {adminCars.map((car) => (
                 <div
                   key={car.id}
-                  className="bg-gradient-to-br from-gray-800/90 to-gray-900/90 backdrop-blur-lg rounded-3xl overflow-hidden shadow-2xl border border-gray-700/50 hover:shadow-3xl transition-all duration-300 transform hover:scale-105"
+                  className="bg-gradient-to-br from-gray-800/90 to-gray-900/90 backdrop-blur-lg rounded-2xl overflow-hidden shadow-xl border border-gray-700/50 hover:shadow-2xl transition-all duration-300 transform hover:scale-105"
                 >
                   <div className="aspect-[4/3] overflow-hidden bg-gradient-to-br from-gray-700 to-gray-800">
                     <img
@@ -518,23 +542,30 @@ export default function AdminPage() {
                       className="w-full h-full object-cover hover:scale-110 transition-transform duration-500"
                     />
                   </div>
-                  <div className="p-6">
-                    <h3 className="font-bold text-[#FFD700] text-lg md:text-2xl mb-2">{car.name}</h3>
-                    <p className="text-gray-300 text-base mb-3">{car.year} yil • {car.category}</p>
+                  <div className="p-4">
+                    <div className="flex justify-between items-start mb-2">
+                      <h3 className="font-bold text-[#FFD700] text-base lg:text-lg">{car.name}</h3>
+                      {isCarRented(car.id) && (
+                        <h4 className="bg-red-600 text-white px-2 py-1 rounded-full text-xs font-bold">
+                          Ijarada
+                        </h4>
+                      )}
+                    </div>
+                    <p className="text-gray-300 text-sm mb-2">{car.year} yil • {car.category}</p>
                     {car.price != null && (
-                      <p className="text-green-400 font-bold text-lg mb-3">
+                      <p className="text-green-400 font-bold text-sm mb-2">
                         {typeof car.price === "number" ? car.price.toLocaleString() : car.price}{" so'm"} / kun
                       </p>
                     )}
-                    <div className="flex items-center gap-2 mb-3 text-yellow-400">
+                    <div className="flex items-center gap-1 mb-2 text-yellow-400 text-sm">
                       {"★".repeat(Math.round(car.rating ?? 0))}
                       {"☆".repeat(5 - Math.round(car.rating ?? 0))}
                       {car.ratingCount != null && car.ratingCount > 0 && (
-                        <span className="text-gray-400 text-sm">({car.ratingCount})</span>
+                        <span className="text-gray-400 text-xs">({car.ratingCount})</span>
                       )}
                     </div>
-                    <p className="text-gray-400 text-base mb-4">{t.admin.available.replace('{count}', String(car.quantity ?? 0))}</p>
-                    <div className="flex gap-3">
+                    <p className="text-gray-400 text-sm mb-3">{t.admin.available.replace('{count}', String(car.quantity ?? 0))}</p>
+                    <div className="flex gap-2">
                       <button
                         type="button"
                         onClick={() => {
@@ -545,25 +576,27 @@ export default function AdminPage() {
                           setEditCategory(car.category as Category);
                           setEditPrice(car.price != null ? String(car.price) : "");
                         }}
-                        className="flex-1 h-12 rounded-xl bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 text-white font-bold text-base transition-all duration-300 shadow-lg"
+                        className="flex-1 h-10 rounded-lg bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 text-white font-bold text-sm transition-all duration-300 shadow-lg"
                       >
                         {t.common.edit}
                       </button>
                       <button
                         type="button"
                         onClick={() => handleDelete(car.id)}
-                        className="flex-1 h-12 rounded-xl bg-gradient-to-r from-red-600 to-red-500 hover:from-red-700 hover:to-red-600 text-white font-bold text-base transition-all duration-300 shadow-lg"
+                        className="flex-1 h-10 rounded-lg bg-gradient-to-r from-red-600 to-red-500 hover:from-red-700 hover:to-red-600 text-white font-bold text-sm transition-all duration-300 shadow-lg"
                       >
                         {t.common.delete}
                       </button>
                     </div>
-                    <button
-                      type="button"
-                      onClick={() => handleReturnToSales(car.id)}
-                      className="w-full h-12 mt-3 rounded-xl bg-gradient-to-r from-green-600 to-green-500 hover:from-green-700 hover:to-green-600 text-white font-bold text-base transition-all duration-300 shadow-lg"
-                    >
-                      {t.admin.returnToSales}
-                    </button>
+                    {isCarRented(car.id) && (
+                      <button
+                        type="button"
+                        onClick={() => handleReturnToSales(car.id)}
+                        className="w-full h-10 mt-2 rounded-lg bg-gradient-to-r from-green-600 to-green-500 hover:from-green-700 hover:to-green-600 text-white font-bold text-sm transition-all duration-300 shadow-lg"
+                      >
+                        {t.admin.returnToSales}
+                      </button>
+                    )}
                   </div>
                 </div>
               ))}

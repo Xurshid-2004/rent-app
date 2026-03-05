@@ -116,6 +116,7 @@ const OrdersPage = () => {
         quantity: increment(1)
       });
 
+      // Local state ni yangilash - qayta yuklamasdan
       setUserOrders(prev => 
         prev.map(order => 
           order.id === orderId 

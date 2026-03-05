@@ -19,6 +19,7 @@ import {
   updateDoc,
   doc,
   serverTimestamp,
+  increment,
 } from "firebase/firestore";
 import { db } from "../../(lib)/firebase";
 import { useOrderDate } from "../../(lib)/OrderDateContext";
@@ -49,11 +50,13 @@ function OrderModal({
   onClose,
   onSuccess,
   onError,
+  onCarUpdate,
 }: {
   car: Car;
   onClose: () => void;
   onSuccess: (msg: string) => void;
   onError: (msg: string) => void;
+  onCarUpdate: (carId: string, newQuantity: number) => void;
 }) {
   const { range } = useOrderDate();
   const { t } = useLanguage();
@@ -144,6 +147,9 @@ function OrderModal({
       await updateDoc(doc(db, "project2", "admin", "cars", car.id), {
         quantity: newQty,
       });
+
+      // Local state ni yangilash uchun callback chaqirish
+      onCarUpdate(car.id, newQty);
 
       onSuccess(t.order.success);
       onClose();
@@ -273,13 +279,56 @@ export default function CarGrid({ category }: { category: CarCategory }) {
   const [showViewOrderButton, setShowViewOrderButton] = useState<string | null>(null);
   const { showToast } = useToast();
   const [visibleCards, setVisibleCards] = useState<Set<number>>(new Set());
+  const [returnedCars, setReturnedCars] = useState<Set<string>>(new Set());
 
   const handleOrderSuccess = () => {
     setShowViewOrderButton(orderCar?.id || null);
   };
 
+  const handleReturnToSale = async (carId: string) => {
+    try {
+      // Mashinani sotuvga qaytarish - quantity ni oshirish
+      const carRef = doc(db, "project2", "admin", "cars", carId);
+      await updateDoc(carRef, {
+        quantity: increment(1),
+        updatedAt: new Date()
+      });
+
+      // Local state ni yangilash - qayta yuklamasdan
+      setCars(prev => 
+        prev.map(car => 
+          car.id === carId 
+            ? { ...car, quantity: (car.quantity || 0) + 1 }
+            : car
+        )
+      );
+
+      // Returned cars set dan olib tashlash (agar mavjud bo'lsa)
+      setReturnedCars(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(carId);
+        return newSet;
+      });
+
+      showToast("Mashina sotuvga qaytarildi", "success");
+    } catch (error) {
+      console.error("Error returning to sale:", error);
+      showToast("Sotuvga qaytarishda xatolik", "error");
+    }
+  };
+
   const handleViewOrder = () => {
     router.push('/dashboard/profil');
+  };
+
+  const handleCarQuantityUpdate = (carId: string, newQuantity: number) => {
+    setCars(prev => 
+      prev.map(car => 
+        car.id === carId 
+          ? { ...car, quantity: newQuantity }
+          : car
+      )
+    );
   };
 
   const fetchCars = async () => {
@@ -384,10 +433,10 @@ export default function CarGrid({ category }: { category: CarCategory }) {
           onClose={() => setOrderCar(null)}
           onSuccess={(msg) => {
             showToast(msg, "success");
-            fetchCars();
             handleOrderSuccess();
           }}
           onError={(msg) => showToast(msg, "error")}
+          onCarUpdate={handleCarQuantityUpdate}
         />
       )}
 
@@ -401,7 +450,7 @@ export default function CarGrid({ category }: { category: CarCategory }) {
               key={car.id}
               data-scroll-card
               data-index={index}
-              className={`w-full max-w-[340px] h-[420px] bg-gray-50 dark:bg-slate-900/70 mx-auto rounded-3xl p-4 border border-gray-200/60 dark:border-slate-700/80 shadow-sm hover:shadow-xl transition-all duration-500 hover:-translate-y-2 ${
+              className={`w-full max-w-[340px] min-h-[420px] bg-gray-50 dark:bg-slate-900/70 mx-auto rounded-3xl p-4 border border-gray-200/60 dark:border-slate-700/80 shadow-sm hover:shadow-xl transition-all duration-500 hover:-translate-y-2 flex flex-col ${
                 isVisible
                   ? "opacity-100 translate-y-0"
                   : "opacity-0 translate-y-8"
@@ -427,7 +476,7 @@ export default function CarGrid({ category }: { category: CarCategory }) {
               </div>
               
               {/* Kontent qismi */}
-              <div className="flex flex-col h-[calc(100%-11rem)] justify-between">
+              <div className="flex flex-col flex-1 justify-between min-h-0">
                 {/* Yil va kategoriya */}
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-gray-600 dark:text-slate-300 text-xs font-medium bg-white/90 dark:bg-slate-900/80 px-2 py-1 rounded-full border border-gray-200 dark:border-slate-700">
@@ -470,7 +519,7 @@ export default function CarGrid({ category }: { category: CarCategory }) {
                 </div>
 
                 {/* Tugmalar */}
-                <div className="flex flex-col mb-4 gap-2 mt-auto">
+                <div className="flex flex-col gap-2 mt-auto">
                   <button
                     type="button"
                     onClick={() => qty > 0 && setOrderCar(car)}
