@@ -76,9 +76,17 @@ export default function AdminPage() {
   // Check if car is currently rented
   const isCarRented = (carId: string) => {
     const car = adminCars.find(c => c.id === carId);
-    if (car?.returnedToSales) return false; // Agar sotuvga qaytarilgan bo'lsa, ijarada emas
+    if (!car) return false;
+    
+    // Agar quantity 0 bo'lsa, ijarada deb hisoblaymiz
+    if ((car.quantity ?? 1) === 0) return true;
+    
+    // Agar returnedToSales true bo'lsa, ijarada emas
+    if (car.returnedToSales) return false;
+    
+    // Buyurtmalarni tekshirish
     return orders.some(order => 
-      order.carId === carId || (order.carName && car && car.name === order.carName)
+      order.carId === carId || (order.carName && car.name === order.carName)
     );
   };
 
@@ -240,7 +248,7 @@ export default function AdminPage() {
         await updateDoc(doc(db, "project2", "admin", "cars", existingDoc.id), {
           quantity: increment(Number(quantity)),
         });
-        showToast(`${Number(quantity)} ta ${name.trim()} qo&apos;shildi`, "success");
+        showToast(`${Number(quantity)} ta ${name.trim()} ${t.admin.carAdded}`, "success");
         loadAdminCars();
       } else {
         await addDoc(carsRef, {
@@ -253,7 +261,7 @@ export default function AdminPage() {
           quantity: Number(quantity),
           price: price.trim() ? (isNaN(Number(price)) ? price.trim() : Number(price)) : undefined,
         });
-        showToast(`${Number(quantity)} ta ${name.trim()} qo&apos;shildi`, "success");
+        showToast(`${Number(quantity)} ta ${name.trim()} ${t.admin.carAdded}`, "success");
       }
       
       // Formani tozalash
@@ -337,26 +345,33 @@ export default function AdminPage() {
           if (carSnap.exists()) {
             const carData = carSnap.data();
             
-            // Umumiy cars collection ga qo'shish (CarGrid shu yerdan qidiradi)
+            // Avval qo'shilgan carni topib o'chirish (agar mavjud bo'lsa)
             const carsRef = collection(db, "project2", "admin", "cars");
-            await addDoc(carsRef, {
-              ...carData,
-              quantity: 1, // Sotuvda 1 ta bo'ladi
-              addedToSales: true, // Sotuvga qo&apos;shilganligini belgilash
-              salesDate: new Date(), // Qo&apos;shilgan vaqti
-              originalCarId: carId, // Asl car ID ni saqlab qolish
-              returnedFromAdmin: true // Admin tomonidan qaytarilganligini belgilash
+            const existingCarQuery = query(carsRef, where("originalCarId", "==", carId));
+            const existingCarSnap = await getDocs(existingCarQuery);
+            
+            if (!existingCarSnap.empty) {
+              // Avval qo'shilgan carni o'chirish
+              existingCarSnap.docs.forEach(doc => deleteDoc(doc.ref));
+            }
+            
+            // Admin cardini yangilash - quantity ni 1 ga oshirish va returnedToSales ni false qilish
+            await updateDoc(carRef, {
+              quantity: increment(1), // Sonini oshirish
+              returnedToSales: false, // Sotuvga qaytarilganligini bekor qilish
+              returnedDate: null // Qaytarilgan vaqtini tozalash
             });
             
-            // Admin panelidan o&apos;chirish o&apos;rniga statusini yangilash
-            await updateDoc(carRef, {
-              returnedToSales: true, // Sotuvga qaytarilganligini belgilash
-              returnedDate: new Date() // Qaytarilgan vaqti
-            });
+            // Faqat shu mashinani local state da yangilash
+            setAdminCars(prev => 
+              prev.map(car => 
+                car.id === carId 
+                  ? { ...car, quantity: (car.quantity || 0) + 1, returnedToSales: false, returnedDate: null }
+                  : car
+              )
+            );
             
             showToast(t.admin.returnSuccess, "success");
-            loadAdminCars(); // Admin cars ro'yxatini yangilash
-            loadOrders(); // Buyurtmalarni ham yangilash
           }
         } catch (error: unknown) {
           showToast(getErrorMessage(error) || t.admin.returnError, "error");

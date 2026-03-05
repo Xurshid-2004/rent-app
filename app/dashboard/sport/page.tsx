@@ -13,7 +13,7 @@ const fadeInUp = {
   transition: { duration: 0.8, ease: "easeOut" }
 };
 
- const fadeIn: Variants = { // : Variants qo&apos;shildi
+ const fadeIn: Variants = { // : Variants qo'shildi
     hidden: { opacity: 0, y: 30 },
     visible: { 
       opacity: 1, 

@@ -278,9 +278,7 @@ export default function CarGrid({ category }: { category: CarCategory }) {
   const [orderCar, setOrderCar] = useState<Car | null>(null);
   const [showViewOrderButton, setShowViewOrderButton] = useState<string | null>(null);
   const { showToast } = useToast();
-  const [visibleCards, setVisibleCards] = useState<Set<number>>(new Set());
-  const [returnedCars, setReturnedCars] = useState<Set<string>>(new Set());
-
+  
   const handleOrderSuccess = () => {
     setShowViewOrderButton(orderCar?.id || null);
   };
@@ -295,7 +293,7 @@ export default function CarGrid({ category }: { category: CarCategory }) {
       });
 
       // Local state ni yangilash - qayta yuklamasdan
-      setCars(prev => 
+      setCars((prev: Car[]) => 
         prev.map(car => 
           car.id === carId 
             ? { ...car, quantity: (car.quantity || 0) + 1 }
@@ -303,17 +301,10 @@ export default function CarGrid({ category }: { category: CarCategory }) {
         )
       );
 
-      // Returned cars set dan olib tashlash (agar mavjud bo'lsa)
-      setReturnedCars(prev => {
-        const newSet = new Set(prev);
-        newSet.delete(carId);
-        return newSet;
-      });
-
-      showToast("Mashina sotuvga qaytarildi", "success");
+      showToast(t.admin.returnSuccess, "success");
     } catch (error) {
       console.error("Error returning to sale:", error);
-      showToast("Sotuvga qaytarishda xatolik", "error");
+      showToast(t.admin.returnError, "error");
     }
   };
 
@@ -322,7 +313,7 @@ export default function CarGrid({ category }: { category: CarCategory }) {
   };
 
   const handleCarQuantityUpdate = (carId: string, newQuantity: number) => {
-    setCars(prev => 
+    setCars((prev: Car[]) => 
       prev.map(car => 
         car.id === carId 
           ? { ...car, quantity: newQuantity }
@@ -359,35 +350,6 @@ export default function CarGrid({ category }: { category: CarCategory }) {
   useEffect(() => {
     fetchCars();
   }, [category]);
-
-  // Scroll animation uchun observer
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            const index = parseInt(entry.target.getAttribute('data-index') || '0');
-            setVisibleCards(prev => new Set(prev).add(index));
-          }
-        });
-      },
-      {
-        threshold: 0.1,
-        rootMargin: '0px 0px -50px 0px'
-      }
-    );
-
-    // Observerni o'rnatish
-    const timeoutId = setTimeout(() => {
-      const elements = document.querySelectorAll('[data-scroll-card]');
-      elements.forEach((el) => observer.observe(el));
-    }, 100);
-
-    return () => {
-      clearTimeout(timeoutId);
-      observer.disconnect();
-    };
-  }, [cars]);
 
   if (loading) {
     return (
@@ -443,22 +405,11 @@ export default function CarGrid({ category }: { category: CarCategory }) {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 2xl:grid-cols-4 gap-6 justify-items-center">
         {cars.map((car, index) => {
           const qty = car.quantity ?? 1;
-          const isVisible = visibleCards.has(index);
           
           return (
             <article
               key={car.id}
-              data-scroll-card
-              data-index={index}
-              className={`w-full max-w-[340px] min-h-[420px] bg-gray-50 dark:bg-slate-900/70 mx-auto rounded-3xl p-4 border border-gray-200/60 dark:border-slate-700/80 shadow-sm hover:shadow-xl transition-all duration-500 hover:-translate-y-2 flex flex-col ${
-                isVisible
-                  ? "opacity-100 translate-y-0"
-                  : "opacity-0 translate-y-8"
-              }`}
-              style={{
-                transition: "opacity 0.6s ease-out, transform 0.6s ease-out",
-                transitionDelay: isVisible ? `${index * 100}ms` : "0ms",
-              }}
+              className="w-full max-w-[340px] min-h-[420px] bg-gray-50 dark:bg-slate-900/70 mx-auto rounded-3xl p-4 border border-gray-200/60 dark:border-slate-700/80 shadow-sm hover:shadow-xl transition-all duration-500 hover:-translate-y-2 flex flex-col"
             >
               {/* Rasm qismi */}
               <div className="relative h-44 overflow-hidden rounded-2xl mb-4 bg-gray-100 dark:bg-slate-800">

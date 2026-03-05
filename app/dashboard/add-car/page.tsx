@@ -136,7 +136,7 @@ const AddCarPage = () => {
         await updateDoc(doc(db, "project2", "admin", "cars", existingDoc.id), {
           quantity: increment(1),
         });
-        showToast(`${carData.name} qo&apos;shildi`, "success");
+        showToast(`${carData.name} ${t.addCar.success}`, "success");
       } else {
         // Yangi mashina qo'shish
         const carDoc = {
@@ -158,7 +158,7 @@ const AddCarPage = () => {
         };
 
         const docRef = await addDoc(carsCollection, carDoc);
-        showToast(`${carData.name} qo&apos;shildi`, "success");
+        showToast(`${carData.name} ${t.addCar.success}`, "success");
       }
       
       // Formani tozalash

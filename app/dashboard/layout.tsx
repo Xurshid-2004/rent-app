@@ -402,7 +402,7 @@ function LayoutContent({ children }: { children: ReactNode }) {
                                 bg-blue-600 hover:bg-blue-500 border border-white/30 backdrop-blur-sm
                                 transition-all shadow-lg">
                   <span className="text-[10px] sm:text-xs md:text-sm lg:text-base font-medium text-white whitespace-nowrap">
-                    Kirish
+                    {t.nav.login}
                   </span>
                   <div className="w-[1px] h-4 bg-white/30" />
                   <img className="w-4 h-4 sm:w-5 sm:h-5 invert" src="/k.png" alt="profile" />
