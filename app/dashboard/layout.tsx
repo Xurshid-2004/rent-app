@@ -342,7 +342,7 @@ function LayoutContent({ children }: { children: ReactNode }) {
             {/* Logo */}
             <div className="flex items-center gap-2 md:gap-3 lg:gap-6 text-green-500 active:scale-95 min-w-0 flex-shrink-0">
               <Link href="/dashboard/all">
-                <img src="/dod.png" alt="Logo" className="h-7 sm:h-10 md:h-12 w-auto brightness-110 rounded-xl" />
+                <img src="/dod.svg" alt="Logo" className="h-7 sm:h-10 md:h-12 w-auto brightness-110 bg-black rounded-xl" />
               </Link>
               <h4 className="font-bold text-sm sm:text-lg md:text-xl lg:text-3xl text-green-500 truncate max-w-[110px] sm:max-w-none">
                 {t.landing.carRental}
